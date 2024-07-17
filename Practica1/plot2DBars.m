@@ -33,5 +33,4 @@ xlabel('x (m)');
 ylabel('y (m)');
 cb.Label.String = sprintf('Stress (%s)',units); 
 
-
 end
