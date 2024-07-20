@@ -88,23 +88,8 @@ fel = forceFunction(data,x,Tn,m,Tm);
 
 % 2.2 Assemble global stiffness matrix
 [K_test,f] = assemblyFunction(data,Td,Kel,fel);
-
-
-cParams.Tnodal = Td;
-cParams.nDOFnode = data.ni;
-cParams.nNode = data.nnod;
-cParams.kElm = Kel;
-
-assembly = GlobalStiffnessMatrixComputer(cParams);
-K = assembly.compute();
-
-if K == K_test
-
-    disp("Succes");
-else
-    disp("Failed");
-end
-
+%assembly = GlobalStiffnessMatrixComputer(Kel,Td,data.nnod,data.ni,fel);
+%[K,f] = assembly.return_matrix();
 % 2.3.1 Apply prescribed DOFs
 [up,vp] = applyBC(data,p);
 

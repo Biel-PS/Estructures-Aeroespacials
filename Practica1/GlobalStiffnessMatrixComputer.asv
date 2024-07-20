@@ -20,14 +20,18 @@ classdef GlobalStiffnessMatrixComputer < handle
             nDOFtotalElem = size(obj.Tnodal,2);
             K_g = zeros (nDOFtotal,nDOFtotal);
             nElem = size(obj.Tnodal,1);
+            elemDimension = 1:nElem;
+            % for e = 1:nElem
+            %     gDOFnodeA = obj.Tnodal(e,1:obj.nDOFnode);
+            %     gDOFnodeB = obj.Tnodal(e,obj.nDOFnode+1:nDOFtotalElem);
+            %     DOF = [gDOFnodeA,gDOFnodeB];
+            %     K_g(DOF,DOF) = K_g(DOF,DOF)+obj.kElm(:,:,e);
+            % end
 
-            for e = 1:nElem
-                gDOFnodeA = obj.Tnodal(e,1:obj.nDOFnode);
-                gDOFnodeB = obj.Tnodal(e,obj.nDOFnode+1:nDOFtotalElem);
+                gDOFnodeA = obj.Tnodal(elemDimension,1:obj.nDOFnode);
+                gDOFnodeB = obj.Tnodal(elemDimension,obj.nDOFnode+1:nDOFtotalElem);
                 DOF = [gDOFnodeA,gDOFnodeB];
-                K_g(DOF,DOF) = K_g(DOF,DOF)+obj.kElm(:,:,e);
-            end
-
+                K_g(DOF,DOF) = K_g(DOF,DOF)+obj.kElm(:,:,elemDimension);
 
         end
 
