@@ -1,22 +1,27 @@
 classdef DirectSolver < handle
     properties (Access = private)
-        uL
+        LHS
+        RHS
     end
 
     methods (Access = public)
-        function [obj] = DirectSolver (LHS,RHS)
-            obj.solver (LHS,RHS);
+
+        function obj = DirectSolver (cParams)
+            obj = obj.init (cParams);
         end
-        function [uL] = return_value (obj)
-            uL = obj.uL;
+
+        function uL = compute (obj)
+            uL = inv(obj.LHS)*obj.RHS;
+            %uL = obj.LHS/obj.RHS;
         end
 
     end
 
     methods (Access = private)
-        function solver (obj,LHS,RHS)
+        function obj = init (obj,cParams)
             %obj.u = inv(LHS)*RHS
-            obj.uL = LHS/RHS;
+            obj.RHS = cParams.RHS;
+            obj.LHS = cParams.LHS;
         end
     end
 end

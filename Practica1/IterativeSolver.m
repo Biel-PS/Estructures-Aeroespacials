@@ -1,20 +1,23 @@
 classdef IterativeSolver < handle
 
     properties
-        uL
+        LHS
+        RHS
     end
 
     methods (Access = public)
-        function obj = IterativeSolver (LHS,RHS)
-            obj.solver(LHS,RHS);
+        function obj = IterativeSolver (cParams)
+            obj = obj.init(cParams);
         end
-        function [uL] = return_value(obj)
-            uL = obj.uL;
+        function [uL] = compute(obj)
+            uL = pcg(obj.LHS,obj.RHS);
         end
     end
     methods (Access = private)
-        function solver (obj, LHS, RHS)
-            obj.uL = pcg(LHS,RHS);
+
+        function obj = init (obj,cParams)
+            obj.LHS = cParams.LHS;
+            obj.RHS = cParams.RHS;
         end
     end 
 end

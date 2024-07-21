@@ -117,11 +117,13 @@ f = pointLoads(data,Td,f,F);
 vf = setdiff((1:data.ndof)',vp);
 u = zeros(data.ndof,1);
 u(vp) = up;
-LHS = K(vf,vf);
-RHS = f(vf) - K(vf,vp)*u(vp);
-Dir_or_iter = 7; %0 = direct solver, otherwise iterative solver
-solver = Solverclass (Dir_or_iter,LHS,RHS);
-uL = solver.return_value;
+variable.LHS = K(vf,vf);
+variable.RHS = f(vf) - K(vf,vp)*u(vp);
+
+solver = Solverclass (variable);
+uLiter = solver.compute_iterative();
+uLdirect = solver.compute_direct();
+
 [u,r] = solveSystem(data,K,f,up,vp);
 % 2.5 Compute stress
 sig = stressFunction(data,x,Tn,m,Tm,Td,u);

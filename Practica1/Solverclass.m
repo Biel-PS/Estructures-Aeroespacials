@@ -1,23 +1,30 @@
 classdef Solverclass
     properties(Access = private)
-        uL
+        cParams
     end
     methods (Access = public)
-        function  obj = Solverclass (option,LHS,RHS)
-            switch option
-                case 0
-                    a = DirectSolver (LHS,RHS);
-                    obj.uL = a.return_value;
-                otherwise
-                    b = IterativeSolver (LHS,RHS);
-                    obj.uL = b.return_value;
-            end
 
+        function  obj = Solverclass (cParams)
+            obj = obj.init(cParams);
+        end
+
+        function uL = compute_iterative (obj)
+            a = IterativeSolver (obj.cParams);
+            uL = a.compute();
         end
         
-        function [uL] = return_value (obj)
-            uL = obj.uL;
+        function uL = compute_direct (obj)
+            a = DirectSolver (obj.cParams);
+            uL = a.compute();
         end
+
     end
 
+    methods (Access = private)
+
+        function obj = init (obj,cParams)
+            obj.cParams = cParams;
+        end
+
+    end
 end
