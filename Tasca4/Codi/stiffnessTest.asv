@@ -1,0 +1,42 @@
+
+classdef stiffnessTest < handle
+
+    properties (Access = private)
+        cParams_ref
+        kRef
+    end
+
+    methods (Access = public)
+
+        function obj = stiffnessTest ()
+            obj = obj.init ();
+        end
+
+        function result = runTest (obj)
+
+            tryMatrix = GlobalStiffnessMatrixComputer(obj.cParams_ref);
+            kTest = tryMatrix.compute();
+
+             result = obj.CompareTwoMagnitudes(kTest,kGlobalRef,tolerance);
+
+
+        end
+    end
+
+    methods (Access = private, Static)
+        function result = CompareTwoMagnitudes (a,b,tolerance)
+            result = false;
+            if (ismembertol(a , b, tolerance))
+                result = true;
+                fprintf("Global Stiffness Matrix Computer TEST: \nPASSED\n")
+                disp ("-------------------")
+            else
+                disp("Global Stiffness Matrix Computer TEST: FAILED")
+                fprintf (2,'FAILED\n')
+                disp ("-------------------")
+            end
+        end
+
+
+    end
+end

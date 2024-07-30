@@ -19,7 +19,7 @@ classdef forceTest < handle
 
             [~,rRef] = solveSystem(obj.data,obj.k,obj.f,obj.up,obj.vp);
 
-            solveForce = ReactionForceComputer(obj.cParams_test); %Posar-ho com a input
+            solveForce = ReactionForceComputer(obj.cParams_test);
             rTest = solveForce.compute;
             result = false;
 

@@ -124,7 +124,7 @@ variable.vf = vf;
 variable.type = 'direct';
 
 solver = Solver.create (variable);
-solver.compute()
+solver.compute();
 
 forceDataSet.K = K;
 forceDataSet.u = u;

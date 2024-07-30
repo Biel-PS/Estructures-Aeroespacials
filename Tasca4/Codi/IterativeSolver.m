@@ -14,7 +14,6 @@ classdef IterativeSolver < handle
             uL = zeros (size(obj.LHS,1),1);
             
             [uL(obj.vf),flag] = pcg(obj.LHS,obj.RHS);
-
         end
     end
     methods (Access = private)

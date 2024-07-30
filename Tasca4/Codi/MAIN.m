@@ -81,31 +81,56 @@ F = [% Each row is a point force component | column_1 = node, column_2 = directi
 %% 2) SOLVER
 
 % 2.1.1 Compute element stiffness matrices
-Kel = stiffnessFunction(data,x,Tn,m,Tm);
+s.data = data;
+s.x = x;
+s.Tn = Tn;
+s.m = m;
+s.Tm = Tm;
+
+
+s.Tnodal = Td;
+s.nDOFnode = data.ni;
+s.nNode = data.nnod;
+
+
+
+ kElementRef = stiffnessFunction(data,x,Tn,m,Tm);
+% stiffnessFunction_parameters.kElm = Kel;
 
 % 2.1.2 Compute element force vectors
-fel = forceFunction(data,x,Tn,m,Tm); 
+
+
+ fElm = forceFunction(data,x,Tn,m,Tm); 
 
 % 2.2 Assemble global stiffness matrix
-[K_test,f] = assemblyFunction(data,Td,Kel,fel);
+
+GlobalForceComputerTestVariables.Td = Td;
+GlobalForceComputerTestVariables.data = data;
+GlobalForceComputerTestVariables.fElm = fElm;
+GlobalForceComputerTestVariables.fExternal = F;
 
 
-cParams.Tnodal = Td;
-cParams.nDOFnode = data.ni;
-cParams.nNode = data.nnod;
-cParams.kElm = Kel;
+ [kGlobalRef,fRef] = assemblyFunction(data,Td,kElementRef,fElm);
 
-assembly = GlobalStiffnessMatrixComputer(cParams);
+
+% cParams.Tnodal = Td;
+% cParams.nDOFnode = data.ni;
+% cParams.nNode = data.nnod;
+% cParams.kElm = Kel;
+
+assembly = GlobalStiffnessMatrixComputer(s);
 K = assembly.compute();
 
+restrictedDofMatrix = p;
+nDofElement = data.ni;
 
 % 2.3.1 Apply prescribed DOFs
-[up,vp] = applyBC(data,p);
+[upRef,vpRef] = applyBC(data,p);
 
 
 
 % 2.3.2 Apply point loads
-f = pointLoads(data,Td,f,F);
+fRef = pointLoads(data,fRef,F);
 
 % 2.4 Solve system
 
@@ -116,15 +141,26 @@ u(vp) = up;
 
 [u,r] = solveSystem(data,K,f,up,vp);
 
-ReactionForceTest_variables.data = data;
+% ReactionForceTest_variables.data = data;
+% ReactionForceTest_variables.K = K;
+% ReactionForceTest_variables.f = f;
+% ReactionForceTest_variables.up = up;
+% ReactionForceTest_variables.vp = vp;
+% ReactionForceTest_variables.u = u;
+% 
+% ReactionForceTest_variables.LHS = K(vf,vf);
+% ReactionForceTest_variables.RHS = f(vf) - K(vf,vp)*u(vp);
+% ReactionForceTest_variables.vf = vf;
 
-variable.LHS = K(vf,vf);
-variable.RHS = f(vf) - K(vf,vp)*u(vp);
-variable.vf = vf;
-variable.type = 'direct';
 
-solver = Solver.create (variable);
-solver.compute()
+dataIn.LHS = K(vf,vf);
+dataIn.RHS = f(vf) - K(vf,vp)*u(vp);
+dataIn.vf = vf;
+dataIn.type = "iterative";
+
+
+solver = Solver.create (dataIn);
+uL = solver.compute();
 
 forceDataSet.K = K;
 forceDataSet.u = u;

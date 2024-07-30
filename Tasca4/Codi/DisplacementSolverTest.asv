@@ -1,0 +1,36 @@
+classdef DisplacementSolverTest < handle
+    methods (Access = public,Static)
+        function result = runIterativeTest (dataIn,uRef)
+            dataIn.type = 'Iterative';
+            displacement = Solver(dataIn);
+            uTest = displacement.compute();
+            result = false;
+
+            if (uRef == uTest)
+                result = true;
+                fprintf("Direct Displacement Computer TEST: \nPASSED\n")
+                disp ("-------------------")
+            else
+                disp("Direct Displacement Computer TEST: FAILED")
+                fprintf (2,'FAILED\n')
+                disp ("-------------------")
+            end
+        end
+        function result = runDirectTest (dataIn,uRef)
+            dataIn.type = 'direct';
+            displacement = Solver(dataIn);
+            uTest = displacement.compute();
+            result = false;
+
+            if (uRef == uTest)
+                result = true;
+                fprintf("Direct Displacement Computer TEST: \nPASSED\n")
+                disp ("-------------------")
+            else
+                disp("Direct Displacement Computer TEST: FAILED")
+                fprintf (2,'FAILED\n')
+                disp ("-------------------")
+            end
+        end
+    end
+end

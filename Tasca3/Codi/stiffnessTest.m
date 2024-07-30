@@ -1,22 +1,13 @@
-
 classdef stiffnessTest < handle
 
-    properties (Access = private)
-        cParams_ref
-        kRef
-    end
+    methods (Access = public, Static)
 
-    methods (Access = public)
+        function result = runTest (initialData,KRef)
 
-        function obj = stiffnessTest ()
-            obj = obj.init ();
-        end
-
-        function result = runTest (obj)
-            tryMatrix = GlobalStiffnessMatrixComputer(obj.cParams_ref);
+            tryMatrix = GlobalStiffnessMatrixComputer(initialData);
             result = false;
 
-            if (obj.kRef == tryMatrix.compute())
+            if (KRef == tryMatrix.compute())
                 result = true;
                 fprintf ("Global Stiffness Matrix Computer TEST: \nPASSED\n") %Optional message
                 disp ("-------------------")
@@ -25,15 +16,6 @@ classdef stiffnessTest < handle
                 fprintf (2,'FAILED\n')
                 disp ("-------------------")
             end
-        end
-    end
-
-    methods (Access = private)
-
-        function obj = init (obj)
-            load("stiffnesTestVariables.mat","cParams");
-            obj.cParams_ref = cParams;
-            obj.kRef = cParams.K_test;
         end
     end
 end
