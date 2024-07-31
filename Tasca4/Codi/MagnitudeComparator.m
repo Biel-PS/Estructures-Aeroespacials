@@ -10,7 +10,7 @@ classdef MagnitudeComparator < handle
                 fprintf ('\nPASSED\n')
                 disp ("-------------------")
             else
-                disp(label)
+                fprintf(label)
                 fprintf (2,'\nFAILED\n')
                 disp ("-------------------")
             end

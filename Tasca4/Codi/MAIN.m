@@ -81,56 +81,21 @@ F = [% Each row is a point force component | column_1 = node, column_2 = directi
 %% 2) SOLVER
 
 % 2.1.1 Compute element stiffness matrices
-s.data = data;
-s.x = x;
-s.Tn = Tn;
-s.m = m;
-s.Tm = Tm;
-
-
-s.Tnodal = Td;
-s.nDOFnode = data.ni;
-s.nNode = data.nnod;
-
-
-
- kElementRef = stiffnessFunction(data,x,Tn,m,Tm);
-% stiffnessFunction_parameters.kElm = Kel;
+Kel = stiffnessFunction(data,x,Tn,m,Tm);
 
 % 2.1.2 Compute element force vectors
-
-
- fElm = forceFunction(data,x,Tn,m,Tm); 
+fel = forceFunction(data,x,Tn,m,Tm); 
 
 % 2.2 Assemble global stiffness matrix
-
-GlobalForceComputerTestVariables.Td = Td;
-GlobalForceComputerTestVariables.data = data;
-GlobalForceComputerTestVariables.fElm = fElm;
-GlobalForceComputerTestVariables.fExternal = F;
+[K,f] = assemblyFunction(data,Td,Kel,fel);
 
 
- [kGlobalRef,fRef] = assemblyFunction(data,Td,kElementRef,fElm);
-
-
-% cParams.Tnodal = Td;
-% cParams.nDOFnode = data.ni;
-% cParams.nNode = data.nnod;
-% cParams.kElm = Kel;
-
-assembly = GlobalStiffnessMatrixComputer(s);
-K = assembly.compute();
-
-restrictedDofMatrix = p;
-nDofElement = data.ni;
 
 % 2.3.1 Apply prescribed DOFs
-[upRef,vpRef] = applyBC(data,p);
-
-
+[up,vp] = applyBC(data,p);
 
 % 2.3.2 Apply point loads
-fRef = pointLoads(data,fRef,F);
+f = pointLoads(data,Td,f,F);
 
 % 2.4 Solve system
 
@@ -138,37 +103,14 @@ fRef = pointLoads(data,fRef,F);
 vf = setdiff((1:data.ndof)',vp);
 u = zeros(data.ndof,1);
 u(vp) = up;
+variable.LHS = K(vf,vf);
+variable.RHS = f(vf) - K(vf,vp)*u(vp);
+
+solver = Solverclass (variable);
+uLiter = solver.compute_iterative();
+uLdirect = solver.compute_direct();
 
 [u,r] = solveSystem(data,K,f,up,vp);
-
-% ReactionForceTest_variables.data = data;
-% ReactionForceTest_variables.K = K;
-% ReactionForceTest_variables.f = f;
-% ReactionForceTest_variables.up = up;
-% ReactionForceTest_variables.vp = vp;
-% ReactionForceTest_variables.u = u;
-% 
-% ReactionForceTest_variables.LHS = K(vf,vf);
-% ReactionForceTest_variables.RHS = f(vf) - K(vf,vp)*u(vp);
-% ReactionForceTest_variables.vf = vf;
-
-
-dataIn.LHS = K(vf,vf);
-dataIn.RHS = f(vf) - K(vf,vp)*u(vp);
-dataIn.vf = vf;
-dataIn.type = "iterative";
-
-
-solver = Solver.create (dataIn);
-uL = solver.compute();
-
-forceDataSet.K = K;
-forceDataSet.u = u;
-forceDataSet.f = f;
-
-solve_force = ReactionForceComputer (forceDataSet);
-r_class = solve_force.compute();
-
 % 2.5 Compute stress
 sig = stressFunction(data,x,Tn,m,Tm,Td,u);
 

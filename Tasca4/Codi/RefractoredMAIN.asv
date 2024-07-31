@@ -11,16 +11,16 @@ data.w = 75*9.81;
 
 % 1.2 Build geometry (mesh)
 % Nodal coordinates matrix
-x = [% column_1 = x-coord , column_2 = y-coord , ...    
-        0        0
+x = [% column_1 = x-coord , column_2 = y-coord , ...
+    0        0
     0.459   -0.054
     1.125        0
     0.315    0.486
     0.864    0.486
-];
+    ];
 
 
-data.nnod = size(x,1); % Number of nodes 
+data.nnod = size(x,1); % Number of nodes
 data.nd = size(x,2);   % Problem dimension
 data.ndof = data.nnod*data.ni;  % Total number of degrees of freedom
 
@@ -33,8 +33,8 @@ Tn = [% column_1 = element node 1 , column_2 = element node 2, ...
     2 4
     4 5
 
-];
-data.nel = size(Tn,1); % Number of elements 
+    ];
+data.nel = size(Tn,1); % Number of elements
 data.nne = size(Tn,2); % Number of nodes in a bar
 
 % Create degrees of freedom connectivities matrix
@@ -49,7 +49,7 @@ m = [% Each column corresponds to a material property (area, Young's modulus, et
     71e3 A1 0
     71e3 A2 0
     71e3 A3 0
-];
+    ];
 
 % Material connectivities matrix
 Tm = [% Each row is the material (row number in 'm') associated to each element
@@ -59,7 +59,7 @@ Tm = [% Each row is the material (row number in 'm') associated to each element
     3
     2
     2
-];
+    ];
 
 % 1.3 Input boundary conditions
 % Fixed nodes matrix
@@ -68,7 +68,7 @@ p = [% Each row is a prescribed degree of freedom | column_1 = node, column_2 = 
     1 2 0
     3 1 0
     3 2 0
-];
+    ];
 
 % Point loads matrix
 F = [% Each row is a point force component | column_1 = node, column_2 = direction (1 = x-direction, 2 = y-direction), column_3 = force magnitude
@@ -76,43 +76,72 @@ F = [% Each row is a point force component | column_1 = node, column_2 = directi
     4 2 -0.5*data.w;
     5 1 2.5*data.w/9.81;
     5 2 -0.05*data.w;
-];
+    ];
 
 %% 2) SOLVER
 
-% 2.1.1 Compute element stiffness matrices
-Kel = stiffnessFunction(data,x,Tn,m,Tm);
+stiffVariables.Tnodal = Td;
+stiffVariables.data = data;
+stiffVariables.Tn = Tn;
+stiffVariables.m = m;
+stiffVariables.Tm = Tm;
+stiffVariables.nDOFnode = data.ni;
+stiffVariables.nNode = data.nnod;
+stiffVariables.x = x;
 
-% 2.1.2 Compute element force vectors
-fel = forceFunction(data,x,Tn,m,Tm); 
-
-% 2.2 Assemble global stiffness matrix
-[K,f] = assemblyFunction(data,Td,Kel,fel);
 
 
+stiff = GlobalStiffnessMatrixComputer(stiffVariables);
+kGlobal = stiff.compute();
 
-% 2.3.1 Apply prescribed DOFs
-[up,vp] = applyBC(data,p);
+ElementForceVariables.data = data;
+ElementForceVariables.x = x;
+ElementForceVariables.Tn = Tn;
+ElementForceVariables.Tm = Tm;
+ElementForceVariables.m = m;
 
-% 2.3.2 Apply point loads
-f = pointLoads(data,Td,f,F);
+fElm = ElementForceComputer.compute (ElementForceVariables);
 
-% 2.4 Solve system
+GlobalForceVariables.Td = Td;
+GlobalForceVariables.data = data;
+GlobalForceVariables.fElm = fElm;
+GlobalForceVariables.fExternal = F;
 
+GlobalForce = GlobalForceComputer(GlobalForceVariables);
+fGlobal = GlobalForce.compute();
+
+[up,vp] = BoundaryConditionsApplyer.apply(p,data.ni);
 
 vf = setdiff((1:data.ndof)',vp);
 u = zeros(data.ndof,1);
 u(vp) = up;
-variable.LHS = K(vf,vf);
-variable.RHS = f(vf) - K(vf,vp)*u(vp);
 
-solver = Solverclass (variable);
-uLiter = solver.compute_iterative();
-uLdirect = solver.compute_direct();
+solverVariables.LHS = kGlobal(vf,vf);
+solverVariables.RHS = fElm(vf) - kGlobal(vf,vp)*u(vp);
+solverVariables.type = 'direct';
+solverVariables.vf = vf;
 
-[u,r] = solveSystem(data,K,f,up,vp);
+solver = Solver.create(solverVariables);
+u = solver.compute();
+
+forceDataSet.K = K;
+forceDataSet.u = u;
+forceDataSet.f = fRef;
+
+solve_force = ReactionForceComputer (forceDataSet);
+r_class = solve_force.compute();
+
 % 2.5 Compute stress
-sig = stressFunction(data,x,Tn,m,Tm,Td,u);
+
+stressComputerTestVariables.data = data;
+stressComputerTestVariables.x = x;
+stressComputerTestVariables.Tn = Tn;
+stressComputerTestVariables.m = m;
+stressComputerTestVariables.Tm = Tm;
+stressComputerTestVariables.Td = Td;
+stressComputerTestVariables.u = u;
+
+sigRef = stressFunction(data,x,Tn,m,Tm,Td,u);
 
 %% 3) POSTPROCESS
 

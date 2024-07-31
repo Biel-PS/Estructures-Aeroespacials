@@ -10,10 +10,11 @@ load ("DisplacementSolverTestVariables.mat","dataIn","u");
 DisplacementSolverTest.runIterativeTest(dataIn,u,tolerance);
 DisplacementSolverTest.runDirectTest(dataIn,u,tolerance);
 
-clear;
+
 
 %%
 % STIFFNESS MATRIX RELATED TESTS
+clear;
 tolerance = 1e-10;
 
 load ("stiffnessMatrixTest.mat",'s','kElementRef','kGlobalRef'); 
@@ -36,7 +37,14 @@ GlobalForceComputerTest.runTest (GlobalForceComputerTestVariables,fRef,tolerance
 
 %%
 % BOUNDARY CONDITIONS TEST
-clear
+clear;
 tolerance = 1e-10;
 load ("BoundaryConditionsApplyerTestVariables.mat", "nDofElement","restrictedDofMatrix","upRef","vpRef");
 BoundaryConditionsApplyerTest.runTest(restrictedDofMatrix,nDofElement,upRef,vpRef,tolerance);
+
+%%
+% STRESS TEST
+clear;
+tolerance =  1e-10;
+load ("stressComputerTestVariables.mat","stressComputerTestVariables","sigRef");
+StressComputerTest.runTest(stressComputerTestVariables,sigRef,tolerance);

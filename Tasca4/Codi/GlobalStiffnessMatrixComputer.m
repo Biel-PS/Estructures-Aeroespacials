@@ -12,20 +12,20 @@ classdef GlobalStiffnessMatrixComputer < handle
             obj = obj.init(cParams);
 
         end
-        function K_g = compute(obj)
+        function K = compute(obj)
 
             kElm = ElementStiffnessComputer.compute(obj.dataIn);
 
             nDOFtotal = obj.nDOFnode*obj.nNode;
             nDOFtotalElem = size(obj.Tnodal,2);
-            K_g = zeros (nDOFtotal,nDOFtotal);
+            K = zeros (nDOFtotal,nDOFtotal);
             nElem = size(obj.Tnodal,1);
             
             for e = 1:nElem %implementar vectorització
                 gDOFnodeA = obj.Tnodal(e,1:obj.nDOFnode);
                 gDOFnodeB = obj.Tnodal(e,obj.nDOFnode+1:nDOFtotalElem);
                 DOF = [gDOFnodeA,gDOFnodeB];
-                K_g(DOF,DOF) = K_g(DOF,DOF)+kElm(:,:,e);
+                K(DOF,DOF) = K(DOF,DOF)+kElm(:,:,e);
             end
         end
     end
