@@ -2,7 +2,6 @@ classdef ElementForceComputer < handle
 
     methods (Access = public, Static)
         function fElm = compute (dataIn)
-
             fElm = zeros(dataIn.data.nne*dataIn.data.ni,dataIn.data.nel);
             obj = ElementForceComputer;
             for e = 1:dataIn.data.nel
@@ -34,7 +33,6 @@ classdef ElementForceComputer < handle
                 0 0 c s;
                 0 0 -s c];
         end
-
         function Fel = localElementForceCompute (dataIn,R,e)
         
         sigma0 = dataIn.m(dataIn.Tm(e),3);
@@ -43,8 +41,5 @@ classdef ElementForceComputer < handle
         Fel = -sigma0*A*R'*[-1; 0; 1; 0];
 
         end
-
-
     end
-
 end

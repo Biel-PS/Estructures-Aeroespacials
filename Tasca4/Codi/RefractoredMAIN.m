@@ -110,6 +110,10 @@ GlobalForceVariables.Td = Td;
 GlobalForceVariables.data = data;
 GlobalForceVariables.fElm = fElm;
 GlobalForceVariables.fExternal = F;
+GlobalForceVariables.Tn = Tn;
+GlobalForceVariables.x = x;
+GlobalForceVariables.Tm = Tm;
+GlobalForceVariables.m = m;
 
 GlobalForce = GlobalForceComputer(GlobalForceVariables);
 fGlobal = GlobalForce.compute();
